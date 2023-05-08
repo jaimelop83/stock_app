@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Plot from "react-plotly.js";
+import { SMA } from "technicalindicators";
 
 const StockData = ({ symbol }) => {
   const [stockData, setStockData] = useState(null);
+  const [showSMA, setShowSMA] = useState(false);
 
   useEffect(() => {
     axios
@@ -16,8 +18,17 @@ const StockData = ({ symbol }) => {
       });
   }, [symbol]);
 
+  // generates a 14-day simple moving average using fetched stock data - blue line on chart
+  const generateSMA = (data) => {
+    const closePrices = data.map((candle) => candle.close);
+    const sma = SMA.calculate({ period: 14, values: closePrices });
+    return sma;
+  };
+
   const getChartData = () => {
-    return {
+    const sma = generateSMA(stockData.datasets);
+
+    const candlestickTrace = {
       x: stockData.labels,
       close: stockData.datasets.map((data) => data.close),
       high: stockData.datasets.map((data) => data.high),
@@ -27,7 +38,20 @@ const StockData = ({ symbol }) => {
       xaxis: "x",
       yaxis: "y",
     };
+
+    const smaTrace = {
+      x: stockData.labels,
+      y: sma,
+      type: "scatter",
+      mode: "lines",
+      line: { color: "blue" },
+      name: "SMA (14-day)",
+      xaxis: "x",
+      yaxis: "y",
   };
+
+  return showSMA ? [candlestickTrace, smaTrace] : [candlestickTrace];
+};
 
   const chartLayout = {
     title: `${symbol} Candlestick Chart`,
@@ -45,13 +69,20 @@ const StockData = ({ symbol }) => {
     },
   };
 
+  const toggleSMA = () => {
+    setShowSMA(!showSMA);
+  };
+
+
   return (
     <div>
       {stockData ? (
-        <Plot
-        data={[getChartData()]}
-        layout={chartLayout}
-        />
+        <>
+        <button onClick={toggleSMA}>
+          {showSMA ? "Hide SMA (14)" : "Show SMA (14)"}
+        </button>
+        <Plot data={getChartData()} layout={chartLayout} />
+      </>
       ) : (
         <p>Loading stock data...</p>
       )}

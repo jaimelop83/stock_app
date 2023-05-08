@@ -8,12 +8,16 @@ const chalk = require('chalk');
 const routes = require('./routes/routes');
 const errorHandler = require('./middleware/errorHandler');
 const logger = require('./middleware/logger');
+const cors = require('cors');
 
 port = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
+
+// cors middleware
+app.use(cors());
 
 // Middleware to parse JSON data from request body
 app.use(express.json());
