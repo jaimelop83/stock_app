@@ -14,5 +14,6 @@ const openaiController = require('../controllers/openaiController');
 router.get('/polygon/:symbol', polygonController.getStockData);
 router.get('/polygon/group/:symbols', polygonController.getGroupTickers); // get a group of stock tickers sperated by commas and return the data
 router.get('/polygon/candlestick/:symbol', polygonController.getCandlestickData); // fetch stock data for candlestick chart
+router.get('/polygon/summary/:symbol', polygonController.getSummary); // fetches data for openai api and returns a summary of the stock
 
 module.exports = router;

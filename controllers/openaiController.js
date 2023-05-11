@@ -41,3 +41,4 @@ async function getOpenaiResponse(prompt, model) {
   }
 }
 
+module.exports = { getOpenaiResponse };
