@@ -103,7 +103,7 @@ polygonController.getSummary = async (req, res, next) => {
         console.log (chalk.green.italic(`closePrices: ${closePrices}`));
 
         // generate the prompt for the openai api call
-        const prompt = `Please give me a summary of the following company's performance: ${symbol} which has the following history of close prices: ${closePrices.join(', ')}`;
+        const prompt = `Please give me a summary of the following company's performance: ${symbol} which has the following history of close prices: ${closePrices.join(', ')} during the following time period: ${from} to ${to}`;
 
         // call openai api and get the response
         const openaiSummary = await openaiController.getOpenaiResponse(prompt, process.env.OPENAI_MODEL);
