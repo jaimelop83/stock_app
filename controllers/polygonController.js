@@ -1,7 +1,7 @@
-const axios = require('axios');
-require ('dotenv').config();
-const chalk = require('chalk');
-const openaiController = require('./openaiController');
+const axios = require("axios");
+require("dotenv").config();
+const chalk = require("chalk");
+const openaiController = require("./openaiController");
 
 const polygonApiKey = process.env.MY_POLY_API;
 console.log(chalk.red.bold(`polygonApiKey: ${polygonApiKey}`));
@@ -9,114 +9,143 @@ console.log(chalk.red.bold(`polygonApiKey: ${polygonApiKey}`));
 const polygonController = {};
 
 polygonController.getStockData = async (req, res, next) => {
-    const symbol = req.params.symbol;
+  const symbol = req.params.symbol;
 
-    const config = {
-        headers: {
-            Authorization: `Bearer ${polygonApiKey}`
-        },
-        params: {
-            limit: 5,
-            order: 'desc'
-        }
-    };
+  const config = {
+    headers: {
+      Authorization: `Bearer ${polygonApiKey}`,
+    },
+    params: {
+      limit: 5,
+      order: "desc",
+    },
+  };
 
-    try {
-        const response = await axios.get(`https://api.polygon.io/v3/reference/tickers/${symbol}`, config);
-        console.log (`response.data: ${JSON.stringify(response.data)}`);
-        res.json(response.data);
-    } catch (err) {
-        console.log (`Error in polygonController.getStockData: ${err.message}`);
-        console.error(err);
-        next(err);
-    }
+  try {
+    const response = await axios.get(
+      `https://api.polygon.io/v3/reference/tickers/${symbol}`,
+      config
+    );
+    console.log(`response.data: ${JSON.stringify(response.data)}`);
+    res.json(response.data);
+  } catch (err) {
+    console.log(`Error in polygonController.getStockData: ${err.message}`);
+    console.error(err);
+    next(err);
+  }
 };
 
 // get a group of stock tickers sperated by commas and return the data
 polygonController.getGroupTickers = async (req, res, next) => {
-    const symbols = req.params.symbols;
-    const config = {
-        headers: {
-            Authorization: `Bearer ${polygonApiKey}`
-        },
-        params: {
-            limit: 5,
-            order: 'desc'
-        }
-    };
+  const symbols = req.params.symbols;
+  const config = {
+    headers: {
+      Authorization: `Bearer ${polygonApiKey}`,
+    },
+    params: {
+      limit: 5,
+      order: "desc",
+    },
+  };
 
-    try {
-        const response = await axios.get(`https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers?tickers=${symbols}`, config);
-        console.log (`response.data: ${JSON.stringify(response.data)}`);
-        res.json(response.data);
-    } catch (err) {
-        console.log (`Error in polygonController.getGroupTickers: ${err.message}`);
-        console.error(err);
-        next(err);
-    }
+  try {
+    const response = await axios.get(
+      `https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers?tickers=${symbols}`,
+      config
+    );
+    console.log(`response.data: ${JSON.stringify(response.data)}`);
+    res.json(response.data);
+  } catch (err) {
+    console.log(`Error in polygonController.getGroupTickers: ${err.message}`);
+    console.error(err);
+    next(err);
+  }
 };
 
 // fetch stock data for candlestick chart
 polygonController.getCandlestickData = async (req, res, next) => {
-    const symbol = req.params.symbol;
-    const multiplier = req.params.multiplier || 1;
-    const timespan = req.params.timespan || 'day';
-    const from = req.params.from || '2022-01-01';
-    const to = req.params.to || '2022-12-31';
+  const symbol = req.params.symbol;
+  const multiplier = req.params.multiplier || 1;
+  const timespan = req.params.timespan || "day";
+  const from = req.params.from || "2022-01-01";
+  const to = req.params.to || "2022-12-31";
 
-    try {
-        const response = await axios.get(`https://api.polygon.io/v2/aggs/ticker/${symbol}/range/${multiplier}/${timespan}/${from}/${to}?unadjusted=true&sort=asc&limit=120&apiKey=${polygonApiKey}`);
-        console.log (`response.data: ${JSON.stringify(response.data)}`);
+  try {
+    const response = await axios.get(
+      `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/${multiplier}/${timespan}/${from}/${to}?unadjusted=true&sort=asc&limit=120&apiKey=${polygonApiKey}`
+    );
+    console.log(`response.data: ${JSON.stringify(response.data)}`);
 
+    // extract and format data for chart.js
+    const chartData = {
+      labels: response.data.results.map((result) =>
+        new Date(result.t).toISOString().slice(0, 10)
+      ),
+      datasets: response.data.results.map((result) => ({
+        open: result.o,
+        close: result.c,
+        high: result.h,
+        low: result.l,
+        volume: result.v,
+      })),
+    };
 
-        // extract and format data for chart.js
-        const chartData = {
-            labels: response.data.results.map(result => new Date(result.t).toISOString().slice(0, 10)),
-            datasets: response.data.results.map(result => ({
-                open: result.o,
-                close: result.c,
-                high: result.h,
-                low: result.l,
-                volume: result.v
-            }))
-        };
-
-        res.json(chartData); // object that contains labels and datasets
-    } catch (err) {
-        console.log (`Error in polygonController.getCandlestickData: ${err.message}`);
-        console.error(err);
-        next(err);
-    }
+    res.json(chartData); // object that contains labels and datasets
+  } catch (err) {
+    console.log(
+      `Error in polygonController.getCandlestickData: ${err.message}`
+    );
+    console.error(err);
+    next(err);
+  }
 };
 
 polygonController.getSummary = async (req, res, next) => {
-    const symbol = req.params.symbol;
-    const from = req.params.from || '2023-01-01';
-    const to = req.params.to || '2023-05-08';
+  const symbol = req.params.symbol;
+  const from = req.query.from || "2023-01-01";
+  const to = req.query.to || "2023-05-08";
+  const promptType = req.query.promptType || "default";
 
-    try {
-        const response = await axios.get(`https://api.polygon.io/v2/aggs/ticker/${symbol}/range/1/day/${from}/${to}?unadjusted=true&sort=asc&limit=120&apiKey=${polygonApiKey}`);
-        console.log (`response.data: ${JSON.stringify(response.data)}`);
+  try {
+    const response = await axios.get(
+      `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/1/day/${from}/${to}?unadjusted=true&sort=asc&limit=120&apiKey=${polygonApiKey}`
+    );
+    console.log(`response.data: ${JSON.stringify(response.data)}`);
 
-        // extract closing prices
-        const closePrices = response.data.results.map(result => result.c);
-        console.log (chalk.green.italic(`closePrices: ${closePrices}`));
+    // extract closing prices
+    const closePrices = response.data.results.map((result) => result.c);
+    console.log(chalk.green.italic(`closePrices: ${closePrices}`));
 
-        // generate the prompt for the openai api call
-        const prompt = `Please give me a summary of the following company's performance provided the stock ticker: ${symbol} which has the following history of close prices: ${closePrices.join(', ')} during the following time period: ${from} to ${to}, also include the company's full name in your analysis as well as an average risk weighting if the stock should be bought, held or sold.`;
+    // generate the prompt for the openai api call
+    let prompt;
+switch (promptType) {
+  case "type1":
+    prompt = `Can you provide a brief summary on this company whose Stock: ${symbol}\n\n`;
+    break;
+  case "type2":
+    prompt = `What would be the risk category of this Stock: ${symbol} based on the following close prices: ${closePrices.join(", ")} during the following time period: ${from} to ${to}?\n\n`;
+    break;
+  case "type3":
+    prompt = `Is this Stock: ${symbol} considered a buy, hold or sell based on the following close prices: ${closePrices.join(', ')}?`;
+    break;
+  default:
+    prompt = `Please give me a summary of the following company's performance provided the stock ticker: ${symbol} which has the following history of close prices: ${closePrices.join(', ')} during the following time period: ${from} to ${to}, also include the company's full name in your analysis as well as an average risk weighting if the stock should be bought, held or sold.`;
+}
 
-        // call openai api and get the response
-        const openaiSummary = await openaiController.getOpenaiResponse(prompt, process.env.OPENAI_MODEL);
 
-        // return the summary
-        res.json({ summary: openaiSummary });
+    // call openai api and get the response
+    const openaiSummary = await openaiController.getOpenaiResponse(
+      prompt,
+      process.env.OPENAI_MODEL
+    );
 
-    } catch (err) {
-        console.log (`Error in polygonController.getSummary: ${err.message}`);
-        console.error(err);
-        next(err);
-    }
+    // return the summary
+    res.json({ summary: openaiSummary });
+  } catch (err) {
+    console.log(`Error in polygonController.getSummary: ${err.message}`);
+    console.error(err);
+    next(err);
+  }
 };
-
 
 module.exports = polygonController;
