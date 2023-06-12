@@ -9,6 +9,7 @@ const routes = require('./routes/routes');
 const errorHandler = require('./middleware/errorHandler');
 const logger = require('./middleware/logger');
 const cors = require('cors');
+const path = require('path');
 
 port = process.env.PORT || 3000;
 
@@ -30,6 +31,12 @@ app.use('/', routes);
 
 // Middleware to handle errors
 app.use(errorHandler);
+
+app.use(express.static(path.join(__dirname, 'frontend/build')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));
+});
 
 app.listen(port, () => {
   // use chalk to color the console log and make it stand out

@@ -1,0 +1,11 @@
+version: 0.1
+
+build:
+  commands:
+    # Navigate to frontend directory, install dependencies, and build
+    - cd frontend && npm install && npm run build
+    # Navigate back to the root directory, install dependencies for backend
+    - cd .. && npm install
+    
+start:
+  command: 'node server.js' # This should start your backend server (server.js) in production without nodemon
