@@ -26,7 +26,7 @@ app.use(express.json());
 app.use(logger);
 
 // import routes
-app.use(routes);
+app.use('/', routes);
 
 // Middleware to handle errors
 app.use(errorHandler);
